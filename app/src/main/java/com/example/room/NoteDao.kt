@@ -1,10 +1,7 @@
 package com.example.room
 
 import androidx.lifecycle.LiveData
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.Query
-import androidx.room.Update
+import androidx.room.*
 
 //DAO (Data Access Object) is a design pattern used in Android (with Room Database)
 //to separate database operations from the rest of the app. It provides a clean API for reading,
@@ -12,17 +9,17 @@ import androidx.room.Update
 
 interface NoteDao{
     @Insert
-    suspend insert(note: Note)
+    suspend fun insert(note: Note)
 
     @Delete
-    suspend delete(note: Note)
+    suspend fun delete(note: Note)
 
     @Update
-    suspend update(note: Note)
+    suspend fun update(note: Note)
 
-    @Query("DELETE * FROM note_table")
-    fun deleteAllNotes()
+    @Query("DELETE FROM note_table")
+    suspend fun deleteAllNotes()
 
-    @Query("SELECT * FROM NOTE_TABLE ORDER BY priority ASC")
-    fun getAllNotes(): LiveData<MutableList<Note>> //real time updates of all
+    @Query("SELECT * FROM note_table ORDER BY priority ASC")
+    fun getAllNotes(): LiveData<List<Note>> //real time updates of all
 }
