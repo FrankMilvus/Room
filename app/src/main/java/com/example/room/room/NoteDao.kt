@@ -21,5 +21,5 @@ interface NoteDao{
     suspend fun deleteAllNotes()
 
     @Query("SELECT * FROM note_table ORDER BY priority ASC")
-    fun getAllNotes(): LiveData<List<Note>> //real time updates of all
+    fun getAllNotes(): LiveData<MutableList<Note>> //real time updates of all
 }
