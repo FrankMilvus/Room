@@ -6,13 +6,13 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(entities = arrayOf(Note::class), version = 1, exportSchema = false)
-annotation class NoteDataBase : RoomDatabase() {
+abstract class NoteDataBase : RoomDatabase() {
     abstract fun getNotesDoa(): NoteDao
 
     companion object {
         private var INSTANCE: NoteDataBase? = null
 
-        fun getInstance(context: Context) {
+        fun getInstance(context: Context): NoteDataBase {
             //if instance is null, then return it
             //if it is null then create DB
             return INSTANCE ?: synchronized(this)
