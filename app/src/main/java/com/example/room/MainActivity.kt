@@ -4,15 +4,12 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Button
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -22,11 +19,13 @@ import com.example.room.adaptors.NoteAdapter
 import com.example.room.room.NoteViewModel
 import com.example.room.utils.Constants
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.snackbar.Snackbar
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), NoteAdapter.OnClickListener {
     private lateinit var noteViewModel: NoteViewModel
     private lateinit var recyclerView: RecyclerView
     private lateinit var notesAdapter: NoteAdapter
+    private lateinit var getResult: ActivityResultLauncher<Intent>
     private lateinit var addNoteButton: FloatingActionButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,7 +40,7 @@ class MainActivity : AppCompatActivity() {
 
         addNoteButton = findViewById(R.id.add_note_button)
         recyclerView = findViewById(R.id.recycler_view)
-        notesAdapter = NoteAdapter()
+        notesAdapter = NoteAdapter(this)
         recyclerView.adapter = notesAdapter
         recyclerView.layoutManager = LinearLayoutManager(this)
 
@@ -52,12 +51,12 @@ class MainActivity : AppCompatActivity() {
         )[NoteViewModel::class.java]
 
         noteViewModel.allNotes.observe(this) { it ->
-            notesAdapter.setNotes(it)
+            notesAdapter.submitList(it)
         }
 
-        val getResult =
+        getResult =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                if (it.resultCode == Constants.REQUEST_CODE) {
+                if (it.resultCode == Constants.ADD_REQUEST_CODE) {
                     val title = it.data?.getStringExtra(Constants.EXTRA_TITLE)
                     val description = it.data?.getStringExtra(Constants.EXTRA_DESCRIPTION)
                     val priority = it.data?.getIntExtra(Constants.EXTRA_PRIORITY, -1)
@@ -65,6 +64,15 @@ class MainActivity : AppCompatActivity() {
                     val note = Note(title!!, description!!, priority!!)
                     noteViewModel.addNote(note)
 
+                } else if (it.resultCode == Constants.EDIT_REQUEST_CODE) {
+                    val title = it.data?.getStringExtra(Constants.EXTRA_TITLE)
+                    val description = it.data?.getStringExtra(Constants.EXTRA_DESCRIPTION)
+                    val priority = it.data?.getIntExtra(Constants.EXTRA_PRIORITY, -1)
+                    val id = it.data?.getIntExtra(Constants.EXTRA_ID, -1)
+
+                    val note = Note(title!!, description!!, priority!!)
+                    note.id = id!!
+                    noteViewModel.updateNote(note)
                 }
             }
 
@@ -87,16 +95,19 @@ class MainActivity : AppCompatActivity() {
                 viewHolder: RecyclerView.ViewHolder,
                 direction: Int
             ) {
+                val removeItem=notesAdapter.getNoteAt(viewHolder.adapterPosition)
                 noteViewModel.deleteNote(notesAdapter.getNoteAt(viewHolder.adapterPosition))
+
+                Snackbar.make(this@MainActivity,recyclerView, "Note Deleted", Snackbar.LENGTH_LONG).setAction("UNDO") {
+                    noteViewModel.addNote(removeItem)
+                }.show()
             }
 
         }).attachToRecyclerView(recyclerView)
 
 
-
-
-
     }
+
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
         return true
@@ -111,6 +122,23 @@ class MainActivity : AppCompatActivity() {
 
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onClickItem(note: Note) {
+        val title = note.title
+        val description = note.description
+        val priority = note.priority
+        val id = note.id
+
+        val intent = Intent(this, AddEditActivity::class.java).apply {
+            putExtra(Constants.EXTRA_TITLE, title)
+            putExtra(Constants.EXTRA_DESCRIPTION, description)
+            putExtra(Constants.EXTRA_PRIORITY, priority)
+            putExtra(Constants.EXTRA_ID, id)
+        }
+        getResult.launch(intent)
+
+
     }
 }
 

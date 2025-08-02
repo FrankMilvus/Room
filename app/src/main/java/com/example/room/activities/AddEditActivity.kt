@@ -38,7 +38,16 @@ class AddEditActivity : AppCompatActivity() {
 
         supportActionBar?.setDefaultDisplayHomeAsUpEnabled(true)
         supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_close)
-        title = "Add note"
+        if (intent.hasExtra(Constants.EXTRA_ID)) {
+            title = "Edit note"
+            editTextTitle.setText(intent.getStringExtra(Constants.EXTRA_TITLE))
+            editTextDescription.setText(intent.getStringExtra(Constants.EXTRA_DESCRIPTION))
+            numberPicker.value = intent.getIntExtra(Constants.EXTRA_PRIORITY, 1)
+
+        } else {
+            title = "Add note"
+        }
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -62,21 +71,32 @@ class AddEditActivity : AppCompatActivity() {
         val description = editTextDescription.text.toString()
         val priority = numberPicker.value
 
-        if(title.trim().isEmpty() || description.trim().isEmpty()){
+        if (title.trim().isEmpty() || description.trim().isEmpty()) {
             Toast.makeText(this, "Insert type and description", Toast.LENGTH_SHORT).show()
             return
 
         }
 
-
-        setResult(Constants.REQUEST_CODE, Intent().apply{
-            putExtra(Constants.EXTRA_TITLE, title)
-            putExtra(Constants.EXTRA_DESCRIPTION, description)
-            putExtra(Constants.EXTRA_PRIORITY, priority)
-        })
+        val id = intent.getIntExtra(Constants.EXTRA_ID, -1)
+        if (id != -1) {
+            setResult(Constants.EDIT_REQUEST_CODE, Intent().apply {
+                putExtra(Constants.EXTRA_ID, id)
+                putExtra(Constants.EXTRA_TITLE, title)
+                putExtra(Constants.EXTRA_DESCRIPTION, description)
+                putExtra(Constants.EXTRA_PRIORITY, priority)
+            })
+        } else {
+            setResult(Constants.ADD_REQUEST_CODE, Intent().apply {
+                putExtra(Constants.EXTRA_TITLE, title)
+                putExtra(Constants.EXTRA_DESCRIPTION, description)
+                putExtra(Constants.EXTRA_PRIORITY, priority)
+            })
+        }
         finish()
     }
 }
+
+
 
 
 
