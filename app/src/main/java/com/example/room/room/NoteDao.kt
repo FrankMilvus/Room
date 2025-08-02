@@ -6,7 +6,7 @@ import androidx.room.*
 //DAO (Data Access Object) is a design pattern used in Android (with Room Database)
 //to separate database operations from the rest of the app. It provides a clean API for reading,
 //inserting, updating, and deleting data without writing raw SQL queries everywhere.
-
+@Dao
 interface NoteDao{
     @Insert
     suspend fun insert(note: Note)

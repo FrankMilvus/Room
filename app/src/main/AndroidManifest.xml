@@ -12,6 +12,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Room">
         <activity
+            android:name=".activities.AddEditActivity"
+            android:parentActivityName=".MainActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>

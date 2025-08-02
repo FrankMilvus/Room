@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("kotlin-kapt")
 }
 
 android {
@@ -38,6 +39,7 @@ android {
 dependencies {
     val room_version = "2.7.2"
     implementation("androidx.room:room-runtime:$room_version")
+    kapt("androidx.room:room-compiler:$room_version") /// not like in l
     annotationProcessor("androidx.room:room-compiler:$room_version")
 
     // ViewModel
